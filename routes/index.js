@@ -4,6 +4,13 @@ const router = express.Router();
 const Product = require('../models/Product');
 const passport = require('passport');
 
+// Middleware para verificar autenticación
+function isLoggedIn(req, res, next) {
+  if (req.isAuthenticated()) return next();
+  res.redirect('/login');
+}
+
+// Obtener productos con filtros
 router.get('/', async (req, res, next) => {
   try {
     const { skip = 0, limit = 10, sort = 'name', tag, priceMin, priceMax, name } = req.query;
@@ -25,7 +32,8 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-router.post('/products', async (req, res, next) => {
+// Crear un nuevo producto
+router.post('/products', isLoggedIn, async (req, res, next) => {
   try {
     const { name, price, image, tags } = req.body;
     const owner = req.user._id;
@@ -39,16 +47,8 @@ router.post('/products', async (req, res, next) => {
   }
 });
 
-router.get('/', async (req, res, next) => {
-  try {
-    const products = await Product.find();
-    res.json(products);
-  } catch (err) {
-    next(err);
-  }
-});
-
-router.delete('/products/:id', async (req, res, next) => {
+// Eliminar un producto
+router.delete('/products/:id', isLoggedIn, async (req, res, next) => {
   try {
     const { id } = req.params;
     const product = await Product.findById(id);
@@ -79,6 +79,7 @@ router.get('/logout', (req, res) => {
   res.redirect('/');
 });
 
+// Crear una nueva entrada
 router.get('/create', isLoggedIn, (req, res) => {
   res.render('create');
 });
@@ -100,6 +101,7 @@ router.post('/create', isLoggedIn, async (req, res, next) => {
   }
 });
 
+// Eliminar un producto desde la vista
 router.get('/delete/:id', isLoggedIn, async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -112,10 +114,5 @@ router.get('/delete/:id', isLoggedIn, async (req, res, next) => {
     next(err);
   }
 });
-
-function isLoggedIn(req, res, next) {
-  if (req.isAuthenticated()) return next();
-  res.redirect('/login');
-}
 
 module.exports = router;
