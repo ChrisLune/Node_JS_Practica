@@ -39,6 +39,15 @@ router.post('/products', async (req, res, next) => {
   }
 });
 
+router.get('/', async (req, res, next) => {
+  try {
+    const products = await Product.find();
+    res.json(products);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.delete('/products/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -69,5 +78,44 @@ router.get('/logout', (req, res) => {
   req.logout();
   res.redirect('/');
 });
+
+router.get('/create', isLoggedIn, (req, res) => {
+  res.render('create');
+});
+
+router.post('/create', isLoggedIn, async (req, res, next) => {
+  try {
+    const { name, price, image, tags } = req.body;
+    const product = new Product({
+      name,
+      owner: req.user._id,
+      price,
+      image,
+      tags
+    });
+    await product.save();
+    res.redirect('/');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/delete/:id', isLoggedIn, async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (product.owner.toString() !== req.user._id.toString()) {
+      return res.redirect('/');
+    }
+    await product.remove();
+    res.redirect('/');
+  } catch (err) {
+    next(err);
+  }
+});
+
+function isLoggedIn(req, res, next) {
+  if (req.isAuthenticated()) return next();
+  res.redirect('/login');
+}
 
 module.exports = router;
