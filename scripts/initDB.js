@@ -1,4 +1,3 @@
-// scripts/initDB.js
 const mongoose = require('mongoose');
 const Product = require('../models/Product');
 const User = require('../models/User');
@@ -18,7 +17,10 @@ async function initDB() {
 
   const products = [
     { name: 'Laptop', owner: users[0]._id, price: 500, image: 'image1.jpg', tags: ['work', 'Dell'] },
-    { name: 'Phone', owner: users[1]._id, price: 250, image: 'image2.jpg', tags: ['mobile', 'Iphone'] }
+    { name: 'Phone', owner: users[1]._id, price: 250, image: 'image2.jpg', tags: ['mobile', 'Iphone'] },
+    { name: 'Tablet', owner: users[2]._id, price: 300, image: 'image3.jpg', tags: ['portable', 'Samsung'] },
+    { name: 'Monitor', owner: users[3]._id, price: 200, image: 'image4.jpg', tags: ['work', 'LG'] },
+    { name: 'Keyboard', owner: users[4]._id, price: 50, image: 'image5.jpg', tags: ['accessory', 'Logitech'] }
   ];
 
   await Product.insertMany(products);

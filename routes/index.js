@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
+const passport = require('passport');
 
 router.get('/', async (req, res, next) => {
   try {
@@ -52,6 +53,21 @@ router.delete('/products/:id', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+// Rutas de autenticación
+router.get('/login', (req, res) => {
+  res.render('login');
+});
+
+router.post('/login', passport.authenticate('local', {
+  successRedirect: '/',
+  failureRedirect: '/login'
+}));
+
+router.get('/logout', (req, res) => {
+  req.logout();
+  res.redirect('/');
 });
 
 module.exports = router;
