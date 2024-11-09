@@ -12,5 +12,17 @@
     <input type="password" name="password" id="password" required>
     <button type="submit">Login</button>
   </form>
+  <h2>Agregar Producto</h2>
+  <form action="/products" method="post">
+    <label for="name">Nombre:</label>
+    <input type="text" name="name" id="name" required>
+    <label for="price">Precio:</label>
+    <input type="number" name="price" id="price" required>
+    <label for="image">Imagen:</label>
+    <input type="text" name="image" id="image">
+    <label for="tags">Etiquetas:</label>
+    <input type="text" name="tags" id="tags" required>
+    <button type="submit">Agregar</button>
+  </form>
 </body>
 </html>
