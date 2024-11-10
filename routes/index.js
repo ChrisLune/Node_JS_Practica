@@ -10,22 +10,26 @@ function isLoggedIn(req, res, next) {
   res.redirect('/login');
 }
 
+// Función para construir filtros de productos
+function buildFilters(query) {
+  const { tag, priceMin, priceMax, name } = query;
+  const filter = {};
+  if (tag) filter.tags = tag;
+  if (priceMin) filter.price = { $gte: priceMin };
+  if (priceMax) filter.price = { ...filter.price, $lte: priceMax };
+  if (name) filter.name = { $regex: `^${name}`, $options: 'i' };
+  return filter;
+}
+
 // Obtener productos con filtros
 router.get('/', async (req, res, next) => {
   try {
-    const { skip = 0, limit = 10, sort = 'name', tag, priceMin, priceMax, name } = req.query;
-
-    const filter = {};
-    if (tag) filter.tags = tag;
-    if (priceMin) filter.price = { $gte: priceMin };
-    if (priceMax) filter.price = { ...filter.price, $lte: priceMax };
-    if (name) filter.name = { $regex: `^${name}`, $options: 'i' };
-
+    const { skip = 0, limit = 10, sort = 'name' } = req.query;
+    const filter = buildFilters(req.query);
     const products = await Product.find(filter)
       .skip(parseInt(skip))
       .limit(parseInt(limit))
       .sort(sort);
-
     res.render('index', { products });
   } catch (err) {
     next(err);
@@ -35,12 +39,11 @@ router.get('/', async (req, res, next) => {
 // Crear un nuevo producto
 router.post('/products', isLoggedIn, async (req, res, next) => {
   try {
-    const { name, price, image, tags } = req.body;
-    const owner = req.user._id;
-
-    const product = new Product({ name, owner, price, image, tags });
+    const product = new Product({
+      ...req.body,
+      owner: req.user._id
+    });
     await product.save();
-
     res.redirect('/');
   } catch (err) {
     next(err);
@@ -52,7 +55,6 @@ router.delete('/products/:id', isLoggedIn, async (req, res, next) => {
   try {
     const { id } = req.params;
     const product = await Product.findById(id);
-
     if (product.owner.equals(req.user._id)) {
       await product.remove();
       res.redirect('/');
@@ -86,13 +88,9 @@ router.get('/create', isLoggedIn, (req, res) => {
 
 router.post('/create', isLoggedIn, async (req, res, next) => {
   try {
-    const { name, price, image, tags } = req.body;
     const product = new Product({
-      name,
-      owner: req.user._id,
-      price,
-      image,
-      tags
+      ...req.body,
+      owner: req.user._id
     });
     await product.save();
     res.redirect('/');

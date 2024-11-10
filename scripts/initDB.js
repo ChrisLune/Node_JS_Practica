@@ -24,7 +24,6 @@ async function initDB() {
   ];
 
   await Product.insertMany(products);
-
   mongoose.connection.close();
 }
 
