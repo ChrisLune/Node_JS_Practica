@@ -1,0 +1,14 @@
+{
+	"login": "Iniciar Sesión",
+	"username": "Nombre de Usuario",
+	"password": "Contraseña",
+	"addProduct": "Agregar Producto",
+	"name": "Nombre",
+	"price": "Precio",
+	"image": "Imagen",
+	"tags": "Etiquetas",
+	"submit": "Enviar",
+	"products": "Productos",
+	"logout": "Cerrar Sesión",
+	"delete": "delete"
+}

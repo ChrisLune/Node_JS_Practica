@@ -3,58 +3,73 @@ const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
 const passport = require('passport');
+const multer = require('multer');
+const path = require('path');
 
-// Middleware para verificar autenticación
+// Configurar multer para la subida de imágenes
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'public/images/')
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname))
+  }
+});
+
+const upload = multer({ storage: storage });
+
+// Middleware para proteger rutas
 function isLoggedIn(req, res, next) {
-  if (req.isAuthenticated()) return next();
+  if (req.isAuthenticated()) {
+    return next();
+  }
   res.redirect('/login');
 }
 
-// Función para construir filtros de productos
-function buildFilters(query) {
-  const { tag, priceMin, priceMax, name } = query;
-  const filter = {};
-  if (tag) filter.tags = tag;
-  if (priceMin) filter.price = { $gte: priceMin };
-  if (priceMax) filter.price = { ...filter.price, $lte: priceMax };
-  if (name) filter.name = { $regex: `^${name}`, $options: 'i' };
-  return filter;
-}
-
-// Obtener productos con filtros
+// Ruta principal
 router.get('/', async (req, res, next) => {
   try {
-    const { skip = 0, limit = 10, sort = 'name' } = req.query;
-    const filter = buildFilters(req.query);
+    const { skip = 0, limit = 10, sort = 'name', tag, priceMin, priceMax, name } = req.query;
+
+    const filter = {};
+    if (tag) filter.tags = tag;
+    if (priceMin) filter.price = { $gte: priceMin };
+    if (priceMax) filter.price = { ...filter.price, $lte: priceMax };
+    if (name) filter.name = { $regex: `^${name}`, $options: 'i' };
+
     const products = await Product.find(filter)
       .skip(parseInt(skip))
       .limit(parseInt(limit))
       .sort(sort);
-    res.render('index', { products });
+
+    res.render('index', { products, user: req.user });
   } catch (err) {
     next(err);
   }
 });
 
-// Crear un nuevo producto
-router.post('/products', isLoggedIn, async (req, res, next) => {
+// Ruta para agregar productos
+router.post('/products', isLoggedIn, upload.single('image'), async (req, res, next) => {
   try {
-    const product = new Product({
-      ...req.body,
-      owner: req.user._id
-    });
+    const { name, price, tags } = req.body;
+    const owner = req.user._id;
+    const image = req.file ? req.file.filename : '';
+
+    const product = new Product({ name, owner, price, image, tags });
     await product.save();
+
     res.redirect('/');
   } catch (err) {
     next(err);
   }
 });
 
-// Eliminar un producto
+// Ruta para eliminar productos
 router.delete('/products/:id', isLoggedIn, async (req, res, next) => {
   try {
     const { id } = req.params;
     const product = await Product.findById(id);
+
     if (product.owner.equals(req.user._id)) {
       await product.remove();
       res.redirect('/');
@@ -68,7 +83,7 @@ router.delete('/products/:id', isLoggedIn, async (req, res, next) => {
 
 // Rutas de autenticación
 router.get('/login', (req, res) => {
-  res.render('login');
+  res.render('login', { user: req.user });
 });
 
 router.post('/login', passport.authenticate('local', {
@@ -76,41 +91,11 @@ router.post('/login', passport.authenticate('local', {
   failureRedirect: '/login'
 }));
 
-router.get('/logout', (req, res) => {
-  req.logout();
-  res.redirect('/');
-});
-
-// Crear una nueva entrada
-router.get('/create', isLoggedIn, (req, res) => {
-  res.render('create');
-});
-
-router.post('/create', isLoggedIn, async (req, res, next) => {
-  try {
-    const product = new Product({
-      ...req.body,
-      owner: req.user._id
-    });
-    await product.save();
-    res.redirect('/');
-  } catch (err) {
-    next(err);
-  }
-});
-
-// Eliminar un producto desde la vista
-router.get('/delete/:id', isLoggedIn, async (req, res, next) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (product.owner.toString() !== req.user._id.toString()) {
-      return res.redirect('/');
-    }
-    await product.remove();
-    res.redirect('/');
-  } catch (err) {
-    next(err);
-  }
+router.get('/logout', (req, res, next) => {
+  req.logout(function(err) {
+    if (err) { return next(err); }
+    res.redirect('/login');
+  });
 });
 
 module.exports = router;

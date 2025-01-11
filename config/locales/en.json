@@ -1,0 +1,13 @@
+{
+    "login": "Login",
+    "username": "Username",
+    "password": "Password",
+    "addProduct": "Add Product",
+    "name": "Name",
+    "price": "Price",
+    "image": "Image",
+    "tags": "Tags",
+    "submit": "Submit",
+    "products": "Products",
+    "logout": "Logout"
+  }

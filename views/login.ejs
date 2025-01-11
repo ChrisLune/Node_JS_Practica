@@ -1,31 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login and Product Addition</title>
+  <title><%= __('login') %></title>
 </head>
 <body>
-  <h1>Login</h1>
+  <h1><%= __('login') %></h1>
   <form action="/login" method="post">
-    <label for="username">Username:</label>
+    <label for="username"><%= __('username') %>:</label>
     <input type="text" name="username" id="username" required>
-    <label for="password">Password:</label>
+    <label for="password"><%= __('password') %>:</label>
     <input type="password" name="password" id="password" required>
-    <button type="submit">Login</button>
+    <button type="submit"><%= __('submit') %></button>
   </form>
 
-  <h2>Add Product</h2>
-  <form action="/products" method="post">
-    <label for="name">Name:</label>
-    <input type="text" name="name" id="name" required>
-    <label for="price">Price:</label>
-    <input type="number" name="price" id="price" required>
-    <label for="image">Image URL:</label>
-    <input type="url" name="image" id="image">
-    <label for="tags">Tags:</label>
-    <input type="text" name="tags" id="tags" required>
-    <button type="submit">Add</button>
-  </form>
+  <% if (user) { %>
+    <h2><%= __('addProduct') %></h2>
+    <form action="/products" method="post" enctype="multipart/form-data">
+      <label for="name"><%= __('name') %>:</label>
+      <input type="text" name="name" id="name" required>
+      <label for="price"><%= __('price') %>:</label>
+      <input type="number" name="price" id="price" required>
+      <label for="image"><%= __('image') %>:</label>
+      <input type="file" name="image" id="image">
+      <label for="tags"><%= __('tags') %>:</label>
+      <input type="text" name="tags" id="tags" required>
+      <button type="submit"><%= __('submit') %></button>
+    </form>
+  <% } %>
 </body>
 </html>

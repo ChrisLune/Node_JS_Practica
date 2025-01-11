@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Nodepop</title>
+  <title><%= __('products') %></title>
 </head>
 <body>
-  <h1>Productos</h1>
+  <h1><%= __('products') %></h1>
   <ul>
     <% products.forEach(product => { %>
       <li>
@@ -13,11 +12,11 @@
         <img src="<%= product.image %>" alt="<%= product.name %>" width="100">
         <form action="/products/<%= product._id %>" method="post">
           <input type="hidden" name="_method" value="DELETE">
-          <button type="submit">Eliminar</button>
+          <button type="submit"><%= __('delete') %></button>
         </form>
       </li>
     <% }); %>
   </ul>
-  <a href="/login">Login</a>
+  <a href="/logout"><%= __('logout') %></a>
 </body>
 </html>
